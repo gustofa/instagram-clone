@@ -1,16 +1,10 @@
 import { useEffect, useState } from "react"; //
 import "./App.css";
 import Post from "./Post";
-
-import { db, auth } from "./firebase.js";
-import "firebase/auth";
-import {
-  createUserWithEmailAndPassword,
-  updateProfile,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
-// eslint-disable-next-line
-import { collection, query, onSnapshot, doc } from "@firebase/firestore";
+import ImageUpload from "./ImageUpload";
+import { firebase, auth, db } from "./firebase.js";
+//import {  createUserWithEmailAndPassword,  updateProfile,  signInWithEmailAndPassword,} from "firebase/auth";
+//import { collection, query, onSnapshot } from "firebase/firestore";
 import { Button, Input, makeStyles, Modal } from "@material-ui/core";
 
 function getModalStyle() {
@@ -45,20 +39,21 @@ function App() {
   const [openSignIn, setOpenSignIn] = useState(false);
 
   useEffect(() => {
-    const postsCol = query(collection(db, "posts"));
-    onSnapshot(postsCol, function (querysnapshot) {
-      setPosts(
-        querysnapshot.docs.map((doc) => ({
-          id: doc.id,
-          post: doc.data(),
-        }))
-      );
-    });
+    db.collection("posts")
+      .orderBy("timestamp", "desc")
+      .onSnapshot((querySnapshot) => {
+        setPosts(
+          querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            post: doc.data(),
+          }))
+        );
+      });
   }, []);
 
   useEffect(() => {
     // eslint-disable-next-line
-    const unsubscribe = auth.onAuthStateChanged((authUser) => {
+    const unsubscribe = auth.onIdTokenChanged((authUser) => {
       if (authUser) {
         console.log(authUser);
         setUser(authUser);
@@ -66,7 +61,7 @@ function App() {
         if (authUser.displayName) {
           // don´t update username
         } else {
-          return updateProfile(authUser, { displayName: username });
+          return authUser.updateProfile({ displayName: username });
         }
       } else {
         setUser(null);
@@ -80,9 +75,12 @@ function App() {
 
   const signUp = (event) => {
     event.preventDefault();
-    createUserWithEmailAndPassword(auth, email, password)
+    console.log("Inside signUp: username=" + username);
+    /*TODO displayName doesn´t save correctly  */
+    auth
+      .createUserWithEmailAndPassword(email, password)
       .then((authUser) => {
-        return updateProfile(authUser.user, {
+        return authUser.user.updateProfile({
           displayName: username,
         });
       })
@@ -92,10 +90,10 @@ function App() {
 
   const signIn = (event) => {
     event.preventDefault();
-    signInWithEmailAndPassword(auth, email, password).catch((error) =>
-      alert(error.message)
-    );
-
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .catch((error) => alert(error.message));
     setOpenSignIn(false);
   };
 
@@ -173,8 +171,8 @@ function App() {
         />
         {user ? (
           <div className="app__logedContainer">
-            <h2>Hello, {user.displayName}</h2>
-            <Button onClick={() => auth.signOut()}>Logout</Button>
+            <h3>Hello, {user.displayName}</h3>
+            <Button onClick={() => firebase.auth().signOut()}>Logout</Button>
           </div>
         ) : (
           <div className="app__loginContainer">
@@ -183,16 +181,22 @@ function App() {
           </div>
         )}
       </div>
-      <h1>Instagram</h1>
-
-      {posts.map(({ id, post }) => (
-        <Post
-          key={id}
-          userName={post.userName}
-          caption={post.caption}
-          imageUrl={post.imageUrl}
-        />
-      ))}
+      <div className="app_posts">
+        {posts.map(({ id, post }) => (
+          <Post
+            key={id}
+            userName={post.userName}
+            caption={post.caption}
+            imageUrl={post.imageUrl}
+          />
+        ))}
+      </div>
+      {user?.displayName ? (
+        <ImageUpload username={user.displayName} />
+      ) : (
+        /*TODO Refresh on SignUp */
+        <h3>Sorry, you need to login to upload</h3>
+      )}
     </div>
   );
 }

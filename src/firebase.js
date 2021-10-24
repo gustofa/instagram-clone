@@ -1,9 +1,11 @@
-//import firebase from "firebase/compat/app";
-//import "firebase/firestore";
+import firebase from "firebase/app";
+import "firebase/storage";
+import "firebase/firestore";
 //import firebase from "firebase/app";
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+//import { initializeApp } from "firebase/app";
+//import { getFirestore } from "firebase/firestore";
+//import { getAuth } from "firebase/auth";
+//import { getStorage } from "firebase/storage";
 require("firebase/auth");
 
 const firebaseConfig = {
@@ -15,18 +17,21 @@ const firebaseConfig = {
   appId: "1:444079936563:web:b66e7acda6e0e39044bf46",
   measurementId: "G-0K52G22KP2",
 };
+//con error object(...) is not a function
+//const firebaseApp = firebase.initializeApp(firebaseConfig);
+//const db = getFirestore(firebaseApp);
+//const auth = getAuth(firebaseApp);
+//const storage = getStorage(firebaseApp);
+// eslint-disable-next-line
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+//const db = getFirestore(app);
+//const auth = getAuth(app);
 
-//firebase.initializeApp(firebaseConfig);
-//const db = firebase.firestore();
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp);
+const storage = firebase.storage(); //getStorage(app);
 
-const auth = getAuth();
-/* 
-const storage = firebase.storage(); */
+//const storageRef = storage.ref()
+//console.log(firebaseApp);
 
-//const storage = firebaseApp.storage();
-
-console.log(firebaseApp);
-
-export { db, auth }; //, storage };
+export { db, auth, storage, firebase }; //db, auth,, storage
