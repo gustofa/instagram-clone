@@ -1,10 +1,8 @@
-import { useEffect, useState } from "react"; //
+import { useEffect, useState } from "react";
 import "./App.css";
 import Post from "./Post";
 import ImageUpload from "./ImageUpload";
 import { firebase, auth, db } from "./firebase.js";
-//import {  createUserWithEmailAndPassword,  updateProfile,  signInWithEmailAndPassword,} from "firebase/auth";
-//import { collection, query, onSnapshot } from "firebase/firestore";
 import { Button, Input, makeStyles, Modal } from "@material-ui/core";
 
 function getModalStyle() {
@@ -185,9 +183,11 @@ function App() {
         {posts.map(({ id, post }) => (
           <Post
             key={id}
+            postId={id}
             userName={post.userName}
             caption={post.caption}
             imageUrl={post.imageUrl}
+            user={user}
           />
         ))}
       </div>
